@@ -4,11 +4,13 @@
 def clean_keyword(keyword: str) -> str:
     """입력된 검색어의 공백을 제거하고 소문자로 변환하여 정제합니다.
 
-    Args:
-        keyword (str): 사용자가 입력한 검색어
+    >>> clean_keyword("  Python  ")
+    'python'
+    >>> clean_keyword("")
+    ''
 
-    Returns:
-        str: 정제된 검색어
+    :param keyword: 사용자가 입력한 검색어
+    :return: 정제된 검색어
     """
     if not keyword:
         return ""
