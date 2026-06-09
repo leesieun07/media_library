@@ -1,0 +1,13 @@
+README.md
+setup.py
+book_package/__init__.py
+book_package/core.py
+book_package/subclass.py
+book_package/utils.py
+book_package.egg-info/PKG-INFO
+book_package.egg-info/SOURCES.txt
+book_package.egg-info/dependency_links.txt
+book_package.egg-info/top_level.txt
+tests/__init__.py
+tests/test_core.py
+tests/test_utils.py
