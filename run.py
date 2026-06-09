@@ -26,7 +26,7 @@ def main():
 
         # 1번 메뉴: 통합 검색
         if menu == "1":
-            keyword = input("🔍 검색할 책 제목이나 저자를 입력하세요: ")
+            keyword = input("🔍 검색할 책 제목이나 저자를 입력하세요 : ")
 
             # 공백 입력 예외 처리 (엣지 케이스 대응)
             if not keyword.strip():
