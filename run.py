@@ -1,136 +1,123 @@
-"""도서 검색 시스템을 실행하는 대화형 CLI 프로그램 인터페이스."""
-
-import sys
 from book_package import DetailedBookSearch
 
-NAVER_CLIENT_ID = "TwAnWdbWJ3lcmzfLYMtV"
-NAVER_CLIENT_SECRET = "AWJ63EXWSY"
-
-
-def main() -> None:
-    """사용자 입력을 받아 도서 검색 시스템을 구동하는 메인 함수."""
-    search_system = DetailedBookSearch(
+def main():
+    # 1. 시스템 초기화 (시은 님의 네이버 API 토큰 정보를 입력하세요)
+    CLIENT_ID = "TwAnWdbWJ3lcmzfLYMtV"          
+    CLIENT_SECRET = "AWJ63EXWSY"  
+    
+    system = DetailedBookSearch(
         system_name="우리 동네 AI 서점",
         location="서울시",
-        client_id=NAVER_CLIENT_ID,
-        client_secret=NAVER_CLIENT_SECRET
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET
     )
 
-    print("=" * 60)
-    print(" Welcome to '우리 동네 AI 서점' (네이버 API & 장바구니 시스템) ")
-    print("=" * 60)
-    print(search_system.get_system_status())
-    print("※ 프로그램 종료를 원하시면 '종료' 또는 'q'를 입력하세요.\n")
+    print(f"=== [{system.system_name} / {system.location}] 시스템 가동 ===")
 
     while True:
-        print("-" * 60)
-        print(" [메뉴] 1: 네이버 실시간 검색 | 2: 내 장바구니 확인 | q: 종료 ")
-        choice = input("👉 원하시는 작업의 번호를 입력하세요: ").strip()
+        # [1단계: 메인 메뉴 화면]
+        print("\n================================================")
+        print(" 1. 도서 검색하기 | 2. 장바구니 보기 | 3. 프로그램 종료")
+        print("================================================")
+        main_choice = input("👉 원하시는 작업 번호를 선택하세요: ").strip()
 
-        if choice.lower() in ["q", "종료"]:
-            print("\n시스템을 종료합니다. 이용해 주셔서 감사합니다!")
-            sys.exit(0)
+        # 3번: 종료하기
+        if main_choice == '3':
+            print("프로그램을 종료합니다. 이용해 주셔서 감사합니다!")
+            break
 
-        elif choice == "1":
-            if not NAVER_CLIENT_ID or "Client_ID" in NAVER_CLIENT_ID:
-                print("❌ 에러: run.py 상단에 실제 네이버 키들을 입력해야 합니다.")
-                continue
-            keyword = input("🌐 네이버 API로 실시간 검색할 책 키워드: ").strip()
-            print("🔄 네이버 서버에서 실시간 도서 정보를 가져오는 중...")
-            
-            results = search_system.search_via_api(keyword)
-            if not results:
-                print("▶ 검색 결과가 존재하지 않습니다.")
-                continue
-
-            # 5개씩 끊어 보여주는 더보기 핸들러 호출
-            _handle_search_pagination(results, search_system)
-
-        elif choice == "2":
-            _show_wishlist_status(search_system)
-
-        else:
-            print("❌ 올바른 메뉴 번호를 입력해 주세요.")
-
-
-def _handle_search_pagination(results: list, system: DetailedBookSearch) -> None:
-    """5개씩 도서를 끊어서 보여주고 더보기 및 책 선택을 처리하는 함수입니다."""
-    start = 0
-    total = len(results)
-
-    while start < total:
-        end = min(start + 5, total)
-        print(f"\n✨ 도서 검색 결과 ({start + 1}~{end} / 총 {total}건):")
-        
-        # 5개 단위로 리스트 슬라이싱하여 출력
-        for idx in range(start, end):
-            book = results[idx]
-            print(f" [{idx + 1}] {book['title']} (저자: {book['author']})")
-        print("-" * 55)
-
-        # 다음 데이터가 남아있다면 더보기 옵션을 안내 문구에 포함
-        if end < total:
-            msg = (f"👉 자세히 볼 책 번호(1~{total})를 입력하거나, "
-                   f"더 보려면 'm'을 입력하세요: ")
-        else:
-            msg = f"👉 자세히 볼 책 번호(1~{total})를 입력하세요: "
-
-        user_input = input(msg).strip()
-
-        # 더보기를 원하는 경우
-        if user_input.lower() == 'm' and end < total:
-            start += 5
+        # 2번: 장바구니 보기
+        elif main_choice == '2':
+            current_wishlist = system.get_wishlist()
+            if not current_wishlist:
+                print("\n🧺 장바구니가 비어 있습니다. 마음에 드는 책을 담아보세요!")
+            else:
+                print("\n🧺 현재 장바구니 목록:")
+                for idx, item in enumerate(current_wishlist, 1):
+                    print(f"  {idx}. {item['title']} ({item['author']})")
             continue
 
-        # 책을 선택한 경우 숫자인지 검증
-        if not user_input.isdigit():
-            print("❌ 올바른 입력이 아닙니다. 메인 메뉴로 돌아갑니다.")
-            break
+        # 1번: 도서 검색하기
+        elif main_choice == '1':
+            while True:
+                # [2단계: 키워드 입력 화면]
+                print("\n------------------------------------------------")
+                keyword = input("🔎 검색할 도서 키워드를 입력하세요 (메인 메뉴로 가려면 'b' 입력): ").strip()
+                
+                if keyword.lower() == 'b':
+                    break # 내부 루프를 빠져나가서 다시 [1단계 메인 메뉴]로 이동
+                if not keyword:
+                    print("❌ 키워드가 비어 있습니다. 다시 입력해 주세요.")
+                    continue
 
-        selected_idx = int(user_input) - 1
-        if selected_idx < 0 or selected_idx >= total:
-            print("❌ 범위를 벗어난 번호입니다. 메인 메뉴로 돌아갑니다.")
-            break
+                print(f"\n📡 '{keyword}' 검색 결과를 네이버 API에서 가져오는 중...")
+                books = system.search_via_api(keyword)
 
-        # 정상 선택 시 상세 보기로 진입 후 탈출
-        _show_book_detail(results[selected_idx], system)
-        break
+                if not books:
+                    print("❌ 검색 결과가 없습니다. 다른 키워드를 입력해 보세요.")
+                    continue
 
+                total_books = len(books)
+                start_index = 0
+                back_to_keyword = False  # '키워드 다시 입력하기' 전환용 플래그
 
-def _show_book_detail(selected_book: dict, system: DetailedBookSearch) -> None:
-    """선택된 도서의 상세 정보를 출력하고 장바구니 담기를 처리합니다."""
-    print("\n" + "=" * 55)
-    print(" 📖 선택하신 도서의 상세 정보 ")
-    print("-" * 55)
-    print(f" 📘 제목   : {selected_book['title']}")
-    print(f" ✍ 저자   : {selected_book['author']}")
-    print(f" 🏢 출판사 : {selected_book['publisher']}")
-    print(f" 💰 할인가 : {selected_book['discount']}원")
-    print(f" 📝 책 소개: {selected_book['description'][:100]}...")
-    print("=" * 55)
+                # [3단계: 5개씩 끊어보는 결과 출력 화면]
+                while start_index < total_books:
+                    end_index = min(start_index + 5, total_books)
+                    print(f"\n--- 검색 결과 ({start_index + 1} ~ {end_index} / 총 {total_books}건) ---")
+                    
+                    for i in range(start_index, end_index):
+                        print(f"[{i + 1}] {books[i]['title']} - {books[i]['author']}")
 
-    print(" [선택] 1: 이 책을 장바구니에 담기 | 2: 담지 않고 메인 메뉴로 이동 ")
-    next_action = input("👉 원하시는 작업 번호를 입력하세요: ").strip()
+                    print("------------------------------------------------")
+                    print("💡 선택: [번호 입력] 자세히 보기 | [m] 더 보기")
+                    print("💡       [r] 키워드 다시 입력하기 | [q] 메인 메뉴로 이동")
+                    print("------------------------------------------------")
+                    
+                    user_input = input("👉 원하시는 선택지를 입력하세요: ").strip().lower()
 
-    if next_action == "1":
-        system.add_to_wishlist(selected_book['title'], selected_book['author'])
-        print(f"🛒 '{selected_book['title']}' 도서가 장바구니에 정상적으로 담겼습니다!")
-    else:
-        print("🏠 메인 메뉴로 돌아갑니다.")
+                    if user_input == 'q':
+                        break # 5개 루프 탈출해서 메인 메뉴로 복귀
+                    
+                    elif user_input == 'r':
+                        print("\n🔄 현재 결과를 닫고 키워드 입력창으로 돌아갑니다.")
+                        back_to_keyword = True
+                        break # 5개 루프 탈출해서 바로 위 [2단계 키워드 입력]으로 복귀
+                        
+                    elif user_input == 'm':
+                        if end_index >= total_books:
+                            print("\n🛑 마지막 페이지입니다. 더 이상 볼 도서가 없습니다.")
+                        else:
+                            start_index += 5
+                        continue
 
-
-def _show_wishlist_status(system: DetailedBookSearch) -> None:
-    """현재 장바구니 리스트의 보관 현황을 보여줍니다."""
-    print("\n📋 [내 장바구니 리스트 현황]")
-    wish_list = system.get_wishlist()
-    if not wish_list:
-        print("▶ 현재 장바구니가 비어 있습니다.")
-        return
-
-    for idx, item in enumerate(wish_list, 1):
-        print(f"  [{idx}] 제목: {item['title']} | 저자: {item['author']}")
-    print(f"✨ 총 {len(wish_list)}권의 도서가 보관 중입니다.")
-
+                    elif user_input.isdigit():
+                        choice = int(user_input)
+                        if start_index < choice <= end_index:
+                            selected_book = books[choice - 1]
+                            
+                            # 상세 정보 화면 출력
+                            print("\n================================================")
+                            print(f"📖 [상세 정보] {selected_book['title']}")
+                            print(f"✍️ 저자: {selected_book['author']} | 🏢 출판사: {selected_book['publisher']}")
+                            print(f"💰 할인가: {selected_book['discount']}원")
+                            print(f"📝 요약: {selected_book['description']}")
+                            print("================================================")
+                            
+                            wish_choice = input("🛒 이 책을 장바구니에 담으시겠습니까? (y/n): ").strip().lower()
+                            if wish_choice == 'y':
+                                system.add_to_wishlist(selected_book['title'], selected_book['author'])
+                                print("✨ 장바구니에 성공적으로 담겼습니다!")
+                        else:
+                            print(f"❌ 현재 화면에 보이는 번호({start_index + 1} ~ {end_index}) 중에서 선택해 주세요.")
+                    else:
+                        print("❌ 올바른 번호나 명령어를 입력해 주세요.")
+                
+                # 만약 사용자가 'r'을 누른 게 아니라 'q'를 누르거나 목록이 끝나서 나온 거라면 키워드 루프도 탈출
+                if not back_to_keyword:
+                    break
+        else:
+            print("❌ 잘못된 선택입니다. 1, 2, 3 중에서 번호를 선택해 주세요.")
 
 if __name__ == "__main__":
     main()
