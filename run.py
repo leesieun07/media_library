@@ -17,15 +17,14 @@ def main() -> None:
     )
 
     print("=" * 60)
-    print(" Welcome to '우리 동네 AI 서점' (파이썬 기본기 장바구니 버전) ")
+    print(" Welcome to '우리 동네 AI 서점' (네이버 API & 장바구니 시스템) ")
     print("=" * 60)
     print(search_system.get_system_status())
     print("※ 프로그램 종료를 원하시면 '종료' 또는 'q'를 입력하세요.\n")
 
     while True:
         print("-" * 60)
-        print(" [메뉴] 1:통합검색 | 2:장르검색 | "
-              "3:네이버검색 | 4:장바구니확인 | q:종료 ")
+        print(" [메뉴] 1: 네이버 실시간 검색 | 2: 내 장바구니 확인 | q: 종료 ")
         choice = input("👉 원하시는 작업의 번호를 입력하세요: ").strip()
 
         if choice.lower() in ["q", "종료"]:
@@ -33,17 +32,6 @@ def main() -> None:
             sys.exit(0)
 
         elif choice == "1":
-            keyword = input("🔍 검색할 제목 또는 저자를 입력하세요: ").strip()
-            results = search_system.advanced_search(keyword)
-            _print_results(results)
-
-        elif choice == "2":
-            msg = "📂 검색할 장르를 입력하세요 (Tech/Fiction/Mystery 등): "
-            genre = input(msg).strip()
-            results = search_system.search_by_genre(genre)
-            _print_results(results)
-
-        elif choice == "3":
             if not NAVER_CLIENT_ID or "Client_ID" in NAVER_CLIENT_ID:
                 print("❌ 에러: run.py 상단에 실제 네이버 키들을 입력해야 합니다.")
                 continue
@@ -55,40 +43,62 @@ def main() -> None:
                 print("▶ 검색 결과가 존재하지 않습니다.")
                 continue
 
-            _print_results(results)
-            _handle_book_selection(results, search_system)
+            # 5개씩 끊어 보여주는 더보기 핸들러 호출
+            _handle_search_pagination(results, search_system)
 
-        elif choice == "4":
+        elif choice == "2":
             _show_wishlist_status(search_system)
 
         else:
             print("❌ 올바른 메뉴 번호를 입력해 주세요.")
 
 
-def _print_results(results: list) -> None:
-    """검색 결과를 예쁘게 포맷팅하여 출력하는 헬퍼 함수."""
-    print(f"\n✨ 총 {len(results)}건의 도서가 검색되었습니다:")
-    for idx, book in enumerate(results, 1):
-        print(f" [{idx}] {book['title']} (저자: {book['author']})")
-    print()
+def _handle_search_pagination(results: list, system: DetailedBookSearch) -> None:
+    """5개씩 도서를 끊어서 보여주고 더보기 및 책 선택을 처리하는 함수입니다."""
+    start = 0
+    total = len(results)
+
+    while start < total:
+        end = min(start + 5, total)
+        print(f"\n✨ 도서 검색 결과 ({start + 1}~{end} / 총 {total}건):")
+        
+        # 5개 단위로 리스트 슬라이싱하여 출력
+        for idx in range(start, end):
+            book = results[idx]
+            print(f" [{idx + 1}] {book['title']} (저자: {book['author']})")
+        print("-" * 55)
+
+        # 다음 데이터가 남아있다면 더보기 옵션을 안내 문구에 포함
+        if end < total:
+            msg = (f"👉 자세히 볼 책 번호(1~{total})를 입력하거나, "
+                   f"더 보려면 'm'을 입력하세요: ")
+        else:
+            msg = f"👉 자세히 볼 책 번호(1~{total})를 입력하세요: "
+
+        user_input = input(msg).strip()
+
+        # 더보기를 원하는 경우
+        if user_input.lower() == 'm' and end < total:
+            start += 5
+            continue
+
+        # 책을 선택한 경우 숫자인지 검증
+        if not user_input.isdigit():
+            print("❌ 올바른 입력이 아닙니다. 메인 메뉴로 돌아갑니다.")
+            break
+
+        selected_idx = int(user_input) - 1
+        if selected_idx < 0 or selected_idx >= total:
+            print("❌ 범위를 벗어난 번호입니다. 메인 메뉴로 돌아갑니다.")
+            break
+
+        # 정상 선택 시 상세 보기로 진입 후 탈출
+        _show_book_detail(results[selected_idx], system)
+        break
 
 
-def _handle_book_selection(results: list, system: DetailedBookSearch) -> None:
-    """도서 목록 중 하나를 선택하여 상세 정보를 보고 장바구니에 담는 흐름을 제어합니다."""
-    select_msg = f"👉 자세히 보고 싶은 책의 번호(1~{len(results)})를 입력하세요: "
-    idx_input = input(select_msg).strip()
-    
-    if not idx_input.isdigit():
-        print("❌ 숫자로만 입력해 주세요. 메뉴로 돌아갑니다.")
-        return
-
-    selected_idx = int(idx_input) - 1
-    if selected_idx < 0 or selected_idx >= len(results):
-        print("❌ 범위를 벗어난 번호입니다. 메뉴로 돌아갑니다.")
-        return
-
-    selected_book = results[selected_idx]
-    
+def _show_book_detail(selected_book: dict, system: DetailedBookSearch) -> None:
+    """선택된 도서의 상세 정보를 출력하고 장바구니 담기를 처리합니다."""
     print("\n" + "=" * 55)
     print(" 📖 선택하신 도서의 상세 정보 ")
     print("-" * 55)
@@ -96,7 +106,7 @@ def _handle_book_selection(results: list, system: DetailedBookSearch) -> None:
     print(f" ✍ 저자   : {selected_book['author']}")
     print(f" 🏢 출판사 : {selected_book['publisher']}")
     print(f" 💰 할인가 : {selected_book['discount']}원")
-    print(f" 📝 책 소개: {selected_book['description'][:100]}...")  # 100자만 자르기
+    print(f" 📝 책 소개: {selected_book['description'][:100]}...")
     print("=" * 55)
 
     print(" [선택] 1: 이 책을 장바구니에 담기 | 2: 담지 않고 메인 메뉴로 이동 ")
@@ -105,10 +115,8 @@ def _handle_book_selection(results: list, system: DetailedBookSearch) -> None:
     if next_action == "1":
         system.add_to_wishlist(selected_book['title'], selected_book['author'])
         print(f"🛒 '{selected_book['title']}' 도서가 장바구니에 정상적으로 담겼습니다!")
-    elif next_action == "2":
-        print("🏠 장바구니에 담지 않고 메인 메뉴로 돌아갑니다.")
     else:
-        print("❌ 잘못된 입력입니다. 메인 메뉴로 돌아갑니다.")
+        print("🏠 메인 메뉴로 돌아갑니다.")
 
 
 def _show_wishlist_status(system: DetailedBookSearch) -> None:
