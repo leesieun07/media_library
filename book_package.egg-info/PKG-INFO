@@ -1,3 +1,13 @@
 Metadata-Version: 2.4
 Name: book_package
-Version: 0.1
+Version: 0.1.0
+Summary: Naver Book Search API and Wishlist System
+Author: Your Name
+Author-email: your_email@example.com
+Requires-Python: >=3.6
+Requires-Dist: requests>=2.25.1
+Dynamic: author
+Dynamic: author-email
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

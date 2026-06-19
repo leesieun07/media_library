@@ -1,29 +1,20 @@
 import pytest
-from book_package.core import BookSearchSystem
-from book_package.utils import clean_keyword
+from book_package import DetailedBookSearch
 
-# 1. utils 정상 케이스
-def test_clean_keyword_normal():
-    assert clean_keyword("  Python  ") == "python"
 
-# 2. utils 엣지 케이스 (빈 문자열)
-def test_clean_keyword_empty():
-    assert clean_keyword("") == ""
+@pytest.fixture
+def sample_system():
+    """테스트용 기본 시스템 객체 생성"""
+    return DetailedBookSearch("테스트 서점", "서울", "mock_id", "mock_secret")
 
-# 3. core 부모 클래스 상태 확인 정상 케이스
-def test_system_status():
-    system = BookSearchSystem("테스트서점")
-    assert "테스트서점" in system.get_system_status()
 
-# 4. core 제목 검색 정상 케이스
-def test_search_by_title_success():
-    system = BookSearchSystem("테스트서점")
-    results = system.search_by_title("Python")
-    assert len(results) == 2
-    assert results[0]["title"] == "Python Programming"
+def test_initialization(sample_system):
+    """1. 정상 케이스 - 객체가 정상적으로 속성들을 가지고 초기화되는지 검증"""
+    assert sample_system.system_name == "테스트 서점"
+    assert sample_system.location == "서울"
 
-# 5. core 제목 검색 엣지 케이스 (결과 없음)
-def test_search_by_title_no_result():
-    system = BookSearchSystem("테스트서점")
-    results = system.search_by_title("Java")
-    assert len(results) == 0
+
+def test_credentials(sample_system):
+    """2. 정상 케이스 - 클라이언트 ID와 Secret이 잘 설정되었는지 검증"""
+    assert sample_system.client_id == "mock_id"
+    assert sample_system.client_secret == "mock_secret"

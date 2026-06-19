@@ -7,7 +7,9 @@ book_package/utils.py
 book_package.egg-info/PKG-INFO
 book_package.egg-info/SOURCES.txt
 book_package.egg-info/dependency_links.txt
+book_package.egg-info/requires.txt
 book_package.egg-info/top_level.txt
 tests/__init__.py
+tests/test_book.py
 tests/test_core.py
 tests/test_utils.py
