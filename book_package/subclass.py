@@ -7,7 +7,10 @@ from .utils import clean_keyword
 
 
 class DetailedBookSearch(BookSearchSystem):
-    """부모 클래스를 상속받아 네이버 API 및 장바구니 기능을 구현한 자식 클래스."""
+    """부모 클래스를 상속받아 네이버 API 및 장바구니 기능을 구현한 자식 클래스.
+
+    :ivar wishlist: 사용자가 담은 도서 목록을 저장하는 리스트
+    """
 
     def __init__(self, system_name: str, location: str,
                  client_id: str = "", client_secret: str = "") -> None:
@@ -16,11 +19,14 @@ class DetailedBookSearch(BookSearchSystem):
         self.location: str = location
         self.client_id: str = client_id
         self.client_secret: str = client_secret
-        # 프로그램 실행 동안 메모리에만 유지되는 순수 파이썬 리스트 장바구니
         self.wishlist: List[Dict[str, str]] = []
 
     def search_via_api(self, keyword: str) -> List[Dict[str, str]]:
-        """네이버 도서 검색 API를 사용하여 최대 50개의 도서를 검색합니다."""
+        """네이버 도서 검색 API를 사용하여 책의 상세 정보들까지 검색한다.
+
+        :param keyword: 검색할 도서 키워드
+        :return: 검색된 도서 정보 딕셔너리들의 리스트
+        """
         cleaned_keyword = clean_keyword(keyword)
         if not cleaned_keyword or not self.client_id or not self.client_secret:
             return []
@@ -30,7 +36,6 @@ class DetailedBookSearch(BookSearchSystem):
             "X-Naver-Client-Id": self.client_id,
             "X-Naver-Client-Secret": self.client_secret
         }
-        # 더보기 기능을 위해 한 번에 50개까지 넉넉하게 가져옵니다.
         params = {"query": cleaned_keyword, "display": 50}
 
         try:
@@ -54,10 +59,26 @@ class DetailedBookSearch(BookSearchSystem):
         return []
 
     def add_to_wishlist(self, book_title: str, book_author: str) -> None:
-        """선택한 도서 정보를 딕셔너리로 묶어 wishlist 리스트에 추가합니다."""
+        """선택한 도서 정보를 딕셔너리로 묶어 wishlist 리스트에 추가한다.
+
+        :param book_title: 추가할 도서 제목
+        :param book_author: 추가할 도서 저자
+
+        >>> system = DetailedBookSearch("테스트", "서울")
+        >>> system.add_to_wishlist("파이썬 기초", "김철수")
+        >>> len(system.get_wishlist())
+        1
+        """
         book = {"title": book_title, "author": book_author}
         self.wishlist.append(book)
 
     def get_wishlist(self) -> List[Dict[str, str]]:
-        """현재 장바구니 리스트를 그대로 반환합니다."""
+        """현재 장바구니 리스트를 그대로 반환한다.
+
+        :return: 장바구니에 담긴 도서 리스트
+
+        >>> system = DetailedBookSearch("테스트", "서울")
+        >>> system.get_wishlist()
+        []
+        """
         return self.wishlist

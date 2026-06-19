@@ -1,0 +1,20 @@
+# 가상환경 (Virtual Environment)
+.venv/
+venv/
+ENV/
+
+# 파이썬 컴파일 및 캐시 파일
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# 프로젝트 빌드 및 배포 관련
+build/
+dist/
+*.egg-info/
+
+# 운영체제 임시 파일 (맥/윈도우)
+.DS_Store
+Thumbs.db
