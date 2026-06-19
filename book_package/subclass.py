@@ -7,33 +7,20 @@ from .utils import clean_keyword
 
 
 class DetailedBookSearch(BookSearchSystem):
-    """부모 클래스를 상속받아 네이버 API 검색 기능을 구현한 자식 클래스.
-
-    :ivar location: 서점 또는 라이브러리 위치
-    :ivar client_id: 네이버 애플리케이션 Client ID
-    :ivar client_secret: 네이버 애플리케이션 Client Secret
-    """
+    """부모 클래스를 상속받아 네이버 API 및 장바구니 기능을 구현한 자식 클래스."""
 
     def __init__(self, system_name: str, location: str,
                  client_id: str = "", client_secret: str = "") -> None:
-        """super()를 활용하여 부모를 초기화하고 네이버 API 키를 추가합니다.
-
-        :param system_name: 검색 시스템 이름
-        :param location: 서점 또는 라이브러리 위치
-        :param client_id: 네이버 Client ID
-        :param client_secret: 네이버 Client Secret
-        """
+        """super()를 활용하여 부모를 초기화하고 장바구니 리스트를 생성합니다."""
         super().__init__(system_name)
         self.location: str = location
         self.client_id: str = client_id
         self.client_secret: str = client_secret
+        # 프로그램이 실행되는 동안 메모리에만 유지되는 순수 파이썬 리스트 장바구니
+        self.wishlist: List[Dict[str, str]] = []
 
     def search_via_api(self, keyword: str) -> List[Dict[str, str]]:
-        """네이버 도서 검색 API를 사용하여 실시간으로 책을 검색합니다.
-
-        :param keyword: 검색할 도서 키워드
-        :return: 정제된 도서 목록
-        """
+        """네이버 도서 검색 API를 사용하여 책의 상세 정보들까지 검색합니다."""
         cleaned_keyword = clean_keyword(keyword)
         if not cleaned_keyword or not self.client_id or not self.client_secret:
             return []
@@ -52,15 +39,28 @@ class DetailedBookSearch(BookSearchSystem):
                 data = response.json()
                 results = []
                 for item in data.get("items", []):
+                    # 자세한 정보 조회를 위해 출판사, 가격, 요약 필드를 추가로 저장합니다.
                     results.append({
                         "title": item.get("title", ""),
                         "author": item.get("author", ""),
+                        "publisher": item.get("publisher", "정보 없음"),
+                        "discount": item.get("discount", "가격 정보 없음"),
+                        "description": item.get("description", "소개 없음"),
                         "genre": "네이버 실시간 검색"
                     })
                 return results
         except requests.RequestException:
             pass
         return []
+
+    def add_to_wishlist(self, book_title: str, book_author: str) -> None:
+        """선택한 도서 정보를 딕셔너리로 묶어 wishlist 리스트에 추가합니다."""
+        book = {"title": book_title, "author": book_author}
+        self.wishlist.append(book)
+
+    def get_wishlist(self) -> List[Dict[str, str]]:
+        """현재 장바구니 리스트를 그대로 반환합니다."""
+        return self.wishlist
 
     def search_by_genre(self, genre: str) -> List[Dict[str, str]]:
         """지정된 장르의 도서만 필터링하여 반환합니다."""
