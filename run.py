@@ -58,7 +58,7 @@ def main():
 
                 total_books = len(books)
                 start_index = 0
-                back_to_keyword = False  # '키워드 다시 입력하기' 전환용 플래그
+                back_to_keyword = False  # '키워드 다시 입력하기'
 
                 # [3단계: 5개씩 끊어보는 결과 출력 화면]
                 while start_index < total_books:
@@ -112,7 +112,7 @@ def main():
                     else:
                         print(" 올바른 번호나 명령어를 입력해 주세요.")
                 
-                # 만약 사용자가 'r'을 누른 게 아니라 'q'를 누르거나 목록이 끝나서 나온 거라면 키워드 루프도 탈출
+                # 만약 사용자가 'r'을 누른 게 아니라 'q'를 누르거나 목록이 끝나서 나온 거라면 끝내기
                 if not back_to_keyword:
                     break
         else:

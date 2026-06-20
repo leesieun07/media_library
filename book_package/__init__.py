@@ -3,4 +3,5 @@
 from .core import BookSearchSystem
 from .subclass import DetailedBookSearch
 
+# 패키지에서 가져올 정보
 __all__ = ["BookSearchSystem", "DetailedBookSearch"]
