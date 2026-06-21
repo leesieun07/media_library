@@ -1,0 +1,15 @@
+[33m79f786d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m fix: self_reviw.md
+[33mfa07669[m add: self_review.md
+[33m26b84ce[m style: fix code layout and spacing issues pointed out by pycodestyle
+[33ma675304[m feat: update test_subclass.py and add quick start to README
+[33mc417c48[m feat: run test and fix code style adjustments
+[33m265f7d0[m feat: add option to go back to keyword input from the book list
+[33mf407534[m feat: update README, modify and verify test files via pytest
+[33me80c71e[m feat: Implement 'view more' loop and remove unused search features
+[33m8610b36[m feat: Add book detail view and in-memory wishlist
+[33mec4042d[m feat: Add Naver Book API
+[33mab81fb8[m 가상환경 설치
+[33m69031f7[m Docstrings & README
+[33m4cdef24[m first
+[33madd4d8a[m first
+[33m9fc6dae[m first commit
